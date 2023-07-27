@@ -121,8 +121,9 @@ public class InvoiceMenuButtons {
                     .replace("%canceledBy%", Bukkit.getOfflinePlayer(invoice.getCanceledBy()).getName())
             )));
         } else {
-            Language.getMessageList("INVOICE.BUTTONS.INVOICE.WHEN_NOT_PAID").forEach(line -> lore.add(ColorUtil.translate(line
+            Language.getMessageList("INVOICE.BUTTONS.INVOICE.WHEN_NOT_PAID_YET").forEach(line -> lore.add(ColorUtil.translate(line
                     .replace("%dateToPay%", invoice.getDateToPayInString())
+                    .replace("%daysLeft%", String.valueOf(invoice.getDaysLeft()))
             )));
         }
 

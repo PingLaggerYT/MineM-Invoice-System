@@ -40,11 +40,13 @@ public class Invoice {
     }
 
     public String getDateToPayInString() {
-        final int daysLeft = (int) ((this.getDateToPay().getTime() - new Date().getTime()) / 86400000L);
-
         // format datetopay to dd-mm-yyyy ##:## PM
         final SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy hh:mm a");
-        return formatter.format(this.getDateToPay()) + " (Nog " + daysLeft + " dagen)";
+        return formatter.format(this.getDateToPay());
+    }
+
+    public int getDaysLeft() {
+        return (int) ((this.getDateToPay().getTime() - new Date().getTime()) / 86400000L);
     }
 
     public String getDateInvoicePaidToString() {

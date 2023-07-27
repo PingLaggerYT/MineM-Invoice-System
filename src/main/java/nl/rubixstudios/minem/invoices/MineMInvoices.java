@@ -150,7 +150,7 @@ public final class MineMInvoices extends JavaPlugin {
     }
 
     private void setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+        if (!Bukkit.getPluginManager().isPluginEnabled("Vault")) {
             return;
         }
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
@@ -161,6 +161,6 @@ public final class MineMInvoices extends JavaPlugin {
     }
 
     public void log(String message) {
-        Bukkit.getConsoleSender().sendMessage(ColorUtil.translate(message));
+        Bukkit.getConsoleSender().sendMessage(Language.getMessage("INVOICE.PREFIX") + ColorUtil.translate(message));
     }
 }

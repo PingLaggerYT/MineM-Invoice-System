@@ -176,7 +176,7 @@ public class InvoiceManager {
         invoice.setCancelReason(reason);
         invoice.setCanceledBy(player.getUniqueId());
 
-        player.sendMessage(Language.getMessage("INVOICE.COMMANDS.CANCEL_COMMAND.INVOICE_CANELLED")
+        player.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.CANCEL_COMMAND.INVOICE_CANCELED")
                 .replace("%player_name%", Bukkit.getOfflinePlayer(billingUser).getName())
                 .replace("%invoice_id%", String.valueOf(invoiceId)));
     }

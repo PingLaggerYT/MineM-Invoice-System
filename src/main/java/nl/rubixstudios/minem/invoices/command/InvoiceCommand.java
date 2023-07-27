@@ -22,36 +22,36 @@ public class InvoiceCommand implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.PLAYER_ONLY"));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.PLAYER_ONLY"));
                 return true;
             }
             final Player player = (Player) sender;
 
             this.invoiceController.openInvoiceMenu(player, player, true);
-            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.OPEN_MENU"));
+            sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.OPEN_MENU"));
             return true;
         }
 
         if (args[0].equalsIgnoreCase("create")) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.PLAYER_ONLY"));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.PLAYER_ONLY"));
                 return true;
             }
 
-            if (!(sender instanceof ConsoleCommandSender) && !this.invoiceController.getInvoiceManager().isAllowedToSentInvoice(((Player) sender))) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.NO_PERMISSION_TO_SEND"));
+            if (!(sender instanceof ConsoleCommandSender) && !sender.isOp()&& !this.invoiceController.getInvoiceManager().isAllowedToSentInvoice(((Player) sender))) {
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.NO_PERMISSION"));
                 return true;
             }
 
             if (args.length < 4) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.USAGE"));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.USAGE"));
                 return true;
             }
 
             final Player player = (Player) sender;
             final OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[1]);
             if (targetPlayer == null) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.INVALID_PLAYER"));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.INVALID_PLAYER"));
                 return true;
             }
 
@@ -59,18 +59,18 @@ public class InvoiceCommand implements CommandExecutor, TabCompleter {
             try {
                 amount = Double.parseDouble(args[2]);
             } catch (NumberFormatException e) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.INVALID_AMOUNT"));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.INVALID_AMOUNT"));
                 return true;
             }
 
             if (amount <= 0) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.NEGATIVE_AMOUNT"));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.NEGATIVE_AMOUNT"));
                 return true;
             }
 
             if (this.invoiceController.getInvoiceManager().exceededLimit(player, amount)) {
                 final double limit = this.invoiceController.getInvoiceManager().getLimit(player);
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.LIMIT_EXCEEDED").replace("%limit%", String.valueOf(limit)));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.LIMIT_EXCEEDED").replace("%limit%", String.valueOf(limit)));
                 return true;
             }
 
@@ -81,63 +81,63 @@ public class InvoiceCommand implements CommandExecutor, TabCompleter {
             }
             String reason = reasonBuilder.toString().trim();
             if (reason.length() > 32) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.REASON_TOO_LONG"));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.REASON_TOO_LONG"));
                 return true;
             }
 
             this.invoiceController.getInvoiceManager().addInvoice(player.getUniqueId(), targetPlayer.getUniqueId(), reason, amount);
-            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.INVOICE_SENT").replace("%player_name%", targetPlayer.getName()));
+            sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.INVOICE_SENT").replace("%player_name%", targetPlayer.getName()));
 
             if (targetPlayer.isOnline()) {
                 final Player targetPlayerOnline = (Player) targetPlayer;
-                targetPlayerOnline.sendMessage(Language.getMessage("INVOICE.COMMANDS.INVOICE_RECEIVED"));
+                targetPlayerOnline.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.INVOICE_RECEIVED"));
             }
         } else if (args[0].equalsIgnoreCase("view")) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.PLAYER_ONLY"));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.PLAYER_ONLY"));
                 return true;
             }
 
-            if (!(sender instanceof ConsoleCommandSender) && !this.invoiceController.getInvoiceManager().isAllowedToCheckInvoice(((Player) sender))) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.NO_PERMISSION_TO_SEND"));
+            if (!(sender instanceof ConsoleCommandSender) && !sender.isOp() && !this.invoiceController.getInvoiceManager().isAllowedToCheckInvoice(((Player) sender))) {
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.NO_PERMISSION"));
                 return true;
             }
 
             if (args.length != 2) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.VIEW_COMMAND.USAGE"));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.VIEW_COMMAND.USAGE"));
                 return true;
             }
 
             final OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[1]);
             if (targetPlayer == null) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.INVALID_PLAYER"));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.INVALID_PLAYER"));
                 return true;
             }
 
             final Player player = (Player) sender;
             this.invoiceController.openInvoiceMenu(player, targetPlayer, true);
-            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.VIEW_COMMAND.OPEN_MENU").replace("%player_name%", targetPlayer.getName()));
+            sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.VIEW_COMMAND.OPEN_MENU").replace("%player_name%", targetPlayer.getName()));
         } else if (args[0].equalsIgnoreCase("cancel")) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.PLAYER_ONLY"));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.PLAYER_ONLY"));
                 return true;
             }
 
-            if (!(sender instanceof ConsoleCommandSender) && !this.invoiceController.getInvoiceManager().isAllowedToCancelInvoice(((Player) sender))) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.NO_PERMISSION_TO_SEND"));
+            if (!(sender instanceof ConsoleCommandSender) && !sender.isOp() && !this.invoiceController.getInvoiceManager().isAllowedToCancelInvoice(((Player) sender))) {
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.NO_PERMISSION"));
                 return true;
             }
 
             final Player player = (Player) sender;
 
             if (args.length < 4) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CANCEL_COMMAND.USAGE"));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.CANCEL_COMMAND.USAGE"));
                 return true;
             }
 
             final OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[1]);
             if (targetPlayer == null) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.INVALID_PLAYER"));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.INVALID_PLAYER"));
                 return true;
             }
 
@@ -145,7 +145,7 @@ public class InvoiceCommand implements CommandExecutor, TabCompleter {
             try {
                 invoiceId = Integer.parseInt(args[2]);
             } catch (NumberFormatException e) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.INVALID_INVOICE_ID"));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.CANCEL_COMMAND.INVALID_INVOICE_ID"));
                 return true;
             }
 
@@ -156,18 +156,18 @@ public class InvoiceCommand implements CommandExecutor, TabCompleter {
             }
             String reason = reasonBuilder.toString().trim();
             if (reason.length() > 32) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.REASON_TOO_LONG"));
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.REASON_TOO_LONG"));
                 return true;
             }
 
             this.invoiceController.getInvoiceManager().cancelInvoice(player, targetPlayer.getUniqueId(), invoiceId, reason);
         } else if (args[0].equalsIgnoreCase("help")) {
-            sender.sendMessage("\n");
-            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.COMMAND_LIST_HEADER"));
+            sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + "\n");
+            sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.COMMAND_LIST_HEADER"));
             for (String helpCommand : this.getHelpCommands()) {
-                sender.sendMessage(helpCommand);
+                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + helpCommand);
             }
-            sender.sendMessage("\n");
+            sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + "\n");
         }
 
         return false;
