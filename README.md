@@ -1,6 +1,9 @@
 # MineM-Invoice-System
 Invoice system based on most FiveM servers and can be used in Roleplay modes.
 
+# Overview:
+This plugin works with 1.14 - 1.20. Below has not been tested.
+
 # Features:
 - Configurable menu and items.
 - Customizable messages.
