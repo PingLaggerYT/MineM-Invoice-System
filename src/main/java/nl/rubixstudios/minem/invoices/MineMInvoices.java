@@ -7,6 +7,7 @@ import net.milkbowl.vault.economy.Economy;
 import nl.rubixstudios.minem.invoices.command.InvoiceCommand;
 import nl.rubixstudios.minem.invoices.data.Config;
 import nl.rubixstudios.minem.invoices.data.ConfigFile;
+import nl.rubixstudios.minem.invoices.data.Language;
 import nl.rubixstudios.minem.invoices.invoice.InvoiceController;
 import nl.rubixstudios.minem.invoices.util.ColorUtil;
 import org.bukkit.Bukkit;
@@ -92,6 +93,7 @@ public final class MineMInvoices extends JavaPlugin {
             return false;
         }
         new Config();
+        new Language();
         return true;
     }
 
