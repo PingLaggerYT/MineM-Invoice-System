@@ -33,11 +33,6 @@ public class InvoiceCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args[0].equalsIgnoreCase("create")) {
-            if (!sender.hasPermission("rinvoice.command.maak")) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.NO_PERMISSION"));
-                return true;
-            }
-
             if (!(sender instanceof Player)) {
                 sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.PLAYER_ONLY"));
                 return true;
@@ -97,12 +92,7 @@ public class InvoiceCommand implements CommandExecutor, TabCompleter {
                 final Player targetPlayerOnline = (Player) targetPlayer;
                 targetPlayerOnline.sendMessage(Language.getMessage("INVOICE.COMMANDS.INVOICE_RECEIVED"));
             }
-        } else if (args[0].equalsIgnoreCase("check")) {
-            if (!sender.hasPermission("rinvoice.command.inzien")) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.VIEW_COMMAND.NO_PERMISSION"));
-                return true;
-            }
-
+        } else if (args[0].equalsIgnoreCase("view")) {
             if (!(sender instanceof Player)) {
                 sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.PLAYER_ONLY"));
                 return true;
@@ -128,11 +118,6 @@ public class InvoiceCommand implements CommandExecutor, TabCompleter {
             this.invoiceController.openInvoiceMenu(player, targetPlayer, true);
             sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.VIEW_COMMAND.OPEN_MENU").replace("%player_name%", targetPlayer.getName()));
         } else if (args[0].equalsIgnoreCase("cancel")) {
-            if (!sender.hasPermission("rinvoice.command.annuleer")) {
-                sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CANCEL_COMMAND.NO_PERMISSION"));
-                return true;
-            }
-
             if (!(sender instanceof Player)) {
                 sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.PLAYER_ONLY"));
                 return true;
