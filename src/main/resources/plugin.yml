@@ -1,0 +1,13 @@
+name: MineM-Invoices
+version: '${project.version}'
+main: nl.rubixstudios.minem.invoices.MineMInvoices
+author: Djorr
+website: https://discord.rubixdevelopment.nl
+api-version: 1.13
+depend:
+  - Vault
+  - NBTAPI
+commands:
+  invoice:
+    description: Open invoice menu
+    aliases: [factuur]

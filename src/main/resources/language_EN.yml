@@ -1,0 +1,74 @@
+INVOICE:
+  MENU:
+    SECTIONS:
+      INVOICE: "&aFactuur"
+      OPEN: "&aOpen"
+      PAID: "&aBetaald"
+  BUTTONS:
+    INVOICE:
+      TITLE: "&aInvoice #%invoice_id%"
+      LORE:
+        - ""
+        - "&aReceived from: &7%sender%"
+        - "&aStatus: &7%status%"
+        - "&aPrice: &7%price%"
+        - ""
+        - "&aDescription: &7%reason%"
+        - ""
+      WHEN_PAID:
+        - "&aPaid on: &7%date%"
+        - "&aPaid by: &7%paidBy%"
+      WHEN_AUTO_PAID:
+        - "&aAuto paid on: &7%date%"
+      WHEN_CANCELLED:
+        - "&aCancelled on: &7%date%"
+        - "&aCancelled by: &7%canceledBy%"
+        - "&aCancel reason: &7%reason%"
+      WHEN_NOT_PAID_YET:
+        - "&aPay before: &7%dateToPay%"
+    PREVIOUS_PAGE: "&aPrevious Page"
+    NEXT_PAGE: "&aNext Page"
+    CLOSE: "&cClose Menu"
+    OPEN_INVOICES: "&aOpen Invoices"
+    PAID_INVOICES: "&aPaid Invoices"
+  CHECK:
+    CANNOT_PAY_OTHERS_INVOICE: "&fJe kan geen factuur betalen die niet van jou is!"
+    INVOICE_NOT_FOUND: "&fDeze speler heeft geen facturen!"
+    INVOICE_ALREADY_PAID: "&fDeze factuur is al betaald!"
+    NOT_ENOUGH_MONEY: "&fJe hebt niet genoeg geld om deze factuur te betalen!"
+    INVOICE_PAID: "&fJe hebt de factuur #%invoice_id% betaald!"
+    INVOICE_AUTO_PAID: "&fJe factuur #%invoice_id% is automatisch betaald!"
+    OPEN_INVOICE_NOTIFY: "&fJe hebt %amount% invoices openstaan! Bekijk hem met /invoice"
+  COMMANDS:
+    HELP_COMMAND:
+      DESCRIPTION: "&8&l» &f/factuur &8-> &7Open factuur menu"
+      COMMAND_LIST:
+        - "&f/factuur &8-> &7Open factuur menu"
+        - "&f/factuur maak <player> <amount> <reden> &8-> &7Maak een factuur"
+        - "&f/factuur inzien <player> &8-> &7Bekijk factuur van een speler"
+        - "&f/factuur annuleer <player> <id> <reden> &8-> &7Annuleer een factuur"
+    CREATE_COMMAND:
+      DESCRIPTION: "&8&l» &f/factuur maak <player> <amount> <reden> &8-> &7Maak een factuur"
+      NO_PERMISSION: "&8&l» &fJe hebt geen toestemming om dit commando uit te voeren!"
+      PLAYER_ONLY: "&8&l» &fJe moet een speler zijn om dit commando uit te voeren!"
+      INVALID_PLAYER: "&8&l» &fDeze speler bestaat niet!"
+      INVALID_AMOUNT: "&8&l» &fOngeldig bedrag!"
+      NEGATIVE_AMOUNT: "&8&l» &fHet bedrag moet hoger zijn dan 0!"
+      LIMIT_EXCEEDED: "&8&l» &fJe hebt het limiet van %limit% bereikt!"
+      REASON_TOO_LONG: "&8&l» &fDe reden mag niet langer zijn dan 32 karakters!"
+      INVOICE_SENT: "&8&l» &fJe hebt een factuur gestuurd naar %player_name%!"
+      INVOICE_RECEIVED: "&8&l» &fJe hebt een factuur ontvangen! Bekijk hem met /factuur"
+    VIEW_COMMAND:
+      DESCRIPTION: "&8&l» &f/factuur inzien <player> &8-> &7Bekijk factuur van een speler"
+      NO_PERMISSION: "&8&l» &fJe hebt geen toestemming om dit commando uit te voeren!"
+      PLAYER_ONLY: "&8&l» &fJe moet een speler zijn om dit commando uit te voeren!"
+      INVALID_PLAYER: "&8&l» &fDeze speler bestaat niet!"
+    CANCEL_COMMAND:
+      DESCRIPTION: "&8&l» &f/factuur annuleer <player> <id> <reden> &8-> &7Annuleer een factuur"
+      NO_PERMISSION: "&8&l» &fJe hebt geen toestemming om dit commando uit te voeren!"
+      PLAYER_ONLY: "&8&l» &fJe moet een speler zijn om dit commando uit te voeren!"
+      INVALID_PLAYER: "&8&l» &fDeze speler bestaat niet!"
+      INVALID_INVOICE_ID: "&8&l» &fOngeldig Factuur-ID!"
+      REASON_TOO_LONG: "&8&l» &fDe reden mag niet langer zijn dan 32 karakters!"
+      INVOICE_CANCELED: "&8&l» &fJe hebt de factuur geannuleerd voor %player_name% (ID: %invoice_id%)!"
+    COMMAND_LIST_HEADER: "\n&8&l» &fFactuur commands:"
