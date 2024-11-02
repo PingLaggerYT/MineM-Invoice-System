@@ -8,5 +8,4 @@ depend:
   - Vault
 commands:
   invoice:
-    description: Open invoice menu
-    aliases: [factuur]
+    description: Manage invoices for players

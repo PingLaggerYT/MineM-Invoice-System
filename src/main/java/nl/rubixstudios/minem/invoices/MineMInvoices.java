@@ -1,5 +1,6 @@
 package nl.rubixstudios.minem.invoices;
 
+import co.aikar.commands.PaperCommandManager;
 import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,7 +11,9 @@ import nl.rubixstudios.minem.invoices.data.ConfigFile;
 import nl.rubixstudios.minem.invoices.data.Language;
 import nl.rubixstudios.minem.invoices.invoice.InvoiceController;
 import nl.rubixstudios.minem.invoices.util.ColorUtil;
+import nl.rubixstudios.minem.invoices.util.metrics.Metrics;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -23,6 +26,8 @@ public final class MineMInvoices extends JavaPlugin {
     @Getter private static MineMInvoices instance;
     @Setter private boolean fullyEnabled;
 
+    private Metrics metrics;
+
     @Setter private ConfigFile configFile;
     @Setter private ConfigFile langFile;
 
@@ -30,6 +35,8 @@ public final class MineMInvoices extends JavaPlugin {
     private Gson gson;
 
     private InvoiceController invoiceController;
+
+    private PaperCommandManager commandManager;
 
     @Override
     public void onEnable() {
@@ -51,18 +58,19 @@ public final class MineMInvoices extends JavaPlugin {
         }
 
         // Check Vault availability
-        if (!checkVault()) {
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        }
+        checkVault();
 
         registerGson();
         setupEconomy();
 
         invoiceController = new InvoiceController();
 
-        final PluginCommand pluginCommand = getCommand(Config.getMessage("COMMAND_NAME"));
-        pluginCommand.setExecutor(new InvoiceCommand());
+        // Initialize ACF and register the command
+        commandManager = new PaperCommandManager(this);
+        commandManager.registerCommand(new InvoiceCommand());
+
+        int pluginId = 19961; // <-- Replace with the id of your plugin!
+        metrics = new Metrics(this, pluginId);
 
         fullyEnabled = true;
 
@@ -81,6 +89,8 @@ public final class MineMInvoices extends JavaPlugin {
             }
             Bukkit.getServicesManager().unregisterAll(this);
             log("");
+
+            metrics.shutdown();
         }
     }
 
@@ -134,10 +144,7 @@ public final class MineMInvoices extends JavaPlugin {
     private boolean checkVault() {
         log("&eChecking Vault availability:");
         if (!Bukkit.getPluginManager().isPluginEnabled("Vault")) {
-            log("   &c&lVault is not installed on this server!");
-            log("");
-            log("- &cDisabling the plugin...");
-            log("&7===&f=============================================&7===");
+            log("   &c&lVault integration is not available because it's not installed!");
             return false;
         }
         log("   &aVault is installed and available.");
@@ -150,7 +157,7 @@ public final class MineMInvoices extends JavaPlugin {
     }
 
     private void setupEconomy() {
-        if (!Bukkit.getPluginManager().isPluginEnabled("Vault")) {
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
             return;
         }
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
@@ -161,6 +168,6 @@ public final class MineMInvoices extends JavaPlugin {
     }
 
     public void log(String message) {
-        Bukkit.getConsoleSender().sendMessage(Language.getMessage("INVOICE.PREFIX") + ColorUtil.translate(message));
+        Bukkit.getConsoleSender().sendMessage(ColorUtil.translate(message));
     }
 }

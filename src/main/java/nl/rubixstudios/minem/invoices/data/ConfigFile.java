@@ -14,45 +14,39 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-/**
- * @author Djorr
- * @created 13/11/2022 - 16:17
- * @project ChunkHopper
- */
 public class ConfigFile extends YamlConfiguration {
 
-    private static MineMInvoices mainInstance = MineMInvoices.getInstance();
+    private static final MineMInvoices mainInstance = MineMInvoices.getInstance();
 
     @Getter
     private final File file;
 
-    public ConfigFile(String name) throws RuntimeException {
+    public ConfigFile(String name) {
         this.file = new File(mainInstance.getDataFolder(), name);
 
-        if(!this.file.exists()) {
+        if (!this.file.exists()) {
             mainInstance.saveResource(name, false);
         }
 
         try {
             this.load(this.file);
-        } catch(IOException | InvalidConfigurationException e) {
-            mainInstance.log("");
-            mainInstance.log("&e===&6=============================================&e===");
-            mainInstance.log(this.center("&cError occurred while loading " + name + ".", 51));
-            mainInstance.log("");
-
-            Stream.of(e.getMessage().split("\n")).forEach(line -> mainInstance.log(line));
-
-            mainInstance.log("&e===&6=============================================&e===");
-            throw new RuntimeException();
+        } catch (IOException | InvalidConfigurationException e) {
+            logError(name, e);
+            throw new RuntimeException("Failed to load configuration file: " + name, e);
         }
+    }
+
+    private void logError(String name, Exception e) {
+        mainInstance.log("&cError occurred while loading " + name + ":");
+        Stream.of(e.getMessage().split("\n")).forEach(line -> mainInstance.log("&c" + line));
+        mainInstance.log("&e===&6=============================================&e===");
     }
 
     public void save() {
         try {
             this.save(this.file);
-        } catch(IOException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            mainInstance.log("&cFailed to save configuration file: " + file.getName());
         }
     }
 
@@ -88,7 +82,6 @@ public class ConfigFile extends YamlConfiguration {
     public String center(String value, int maxLength) {
         StringBuilder builder = new StringBuilder(maxLength - value.length());
         IntStream.range(0, maxLength - value.length()).forEach(i -> builder.append(" "));
-
         builder.insert((builder.length() / 2) + 1, value);
         return builder.toString();
     }

@@ -1,206 +1,168 @@
 package nl.rubixstudios.minem.invoices.command;
 
+import co.aikar.commands.BaseCommand;
+import co.aikar.commands.annotation.*;
+import nl.rubixstudios.minem.invoices.data.Config;
 import nl.rubixstudios.minem.invoices.data.Language;
 import nl.rubixstudios.minem.invoices.invoice.InvoiceController;
+import nl.rubixstudios.minem.invoices.invoice.InvoicePermission;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.*;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class InvoiceCommand implements CommandExecutor, TabCompleter {
+@CommandAlias("invoice|invoices|fine|fines|bill|bills|payment")
+@Description("Manage invoices for players.")
+public class InvoiceCommand extends BaseCommand {
 
     private final InvoiceController invoiceController;
-    
+
     public InvoiceCommand() {
         this.invoiceController = InvoiceController.getInstance();
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length == 0) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.PLAYER_ONLY"));
-                return true;
-            }
-            final Player player = (Player) sender;
+    @Default
+    @CommandPermission("minem.invoices.open")
+    @Description("Opens your invoice menu.")
+    public void onOpen(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(Language.getMessage("INVOICE.CREATE_COMMAND.PLAYER_ONLY"));
+            return;
+        }
+        Player player = (Player) sender;
+        invoiceController.openInvoiceMenu(player, player, true);
+    }
 
-            this.invoiceController.openInvoiceMenu(player, player, true);
-            sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.OPEN_MENU"));
-            return true;
+    @Subcommand("help")
+    @CommandPermission("minem.invoices.command.help")
+    @Description("Displays a list of available invoice commands.")
+    public void onHelp(CommandSender sender) {
+        sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.COMMAND_LIST_HEADER"));
+        getHelpCommands().forEach(sender::sendMessage);
+    }
+
+    @Subcommand("forcecreate")
+    @CommandPermission("minem.invoices.command.forcecreate")
+    @CommandCompletion("@players @players @nothing @nothing")
+    @Description("Forcefully creates an invoice between two players.")
+    public void onForceCreate(CommandSender sender, OfflinePlayer creator, OfflinePlayer payer, double amount, String reason) {
+        if (creator == null || payer == null) {
+            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.FORCECREATE_COMMAND.INVALID_PLAYER"));
+            return;
         }
 
-        if (args[0].equalsIgnoreCase("create")) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.PLAYER_ONLY"));
-                return true;
-            }
-
-            if (!(sender instanceof ConsoleCommandSender) && !sender.isOp()&& !this.invoiceController.getInvoiceManager().isAllowedToSentInvoice(((Player) sender))) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.NO_PERMISSION"));
-                return true;
-            }
-
-            if (args.length < 4) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.USAGE"));
-                return true;
-            }
-
-            final Player player = (Player) sender;
-            final OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[1]);
-            if (targetPlayer == null) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.INVALID_PLAYER"));
-                return true;
-            }
-
-            double amount;
-            try {
-                amount = Double.parseDouble(args[2]);
-            } catch (NumberFormatException e) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.INVALID_AMOUNT"));
-                return true;
-            }
-
-            if (amount <= 0) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.NEGATIVE_AMOUNT"));
-                return true;
-            }
-
-            if (this.invoiceController.getInvoiceManager().exceededLimit(player, amount)) {
-                final double limit = this.invoiceController.getInvoiceManager().getLimit(player);
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.LIMIT_EXCEEDED").replace("%limit%", String.valueOf(limit)));
-                return true;
-            }
-
-            // Combine remaining arguments as the reason
-            StringBuilder reasonBuilder = new StringBuilder();
-            for (int i = 3; i < args.length; i++) {
-                reasonBuilder.append(args[i]).append(" ");
-            }
-            String reason = reasonBuilder.toString().trim();
-            if (reason.length() > 32) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.REASON_TOO_LONG"));
-                return true;
-            }
-
-            this.invoiceController.getInvoiceManager().addInvoice(player.getUniqueId(), targetPlayer.getUniqueId(), reason, amount);
-            sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.INVOICE_SENT").replace("%player_name%", targetPlayer.getName()));
-
-            if (targetPlayer.isOnline()) {
-                final Player targetPlayerOnline = (Player) targetPlayer;
-                targetPlayerOnline.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.INVOICE_RECEIVED"));
-            }
-        } else if (args[0].equalsIgnoreCase("view")) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.PLAYER_ONLY"));
-                return true;
-            }
-
-            if (!(sender instanceof ConsoleCommandSender) && !sender.isOp() && !this.invoiceController.getInvoiceManager().isAllowedToCheckInvoice(((Player) sender))) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.NO_PERMISSION"));
-                return true;
-            }
-
-            if (args.length != 2) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.VIEW_COMMAND.USAGE"));
-                return true;
-            }
-
-            final OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[1]);
-            if (targetPlayer == null) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.INVALID_PLAYER"));
-                return true;
-            }
-
-            final Player player = (Player) sender;
-            this.invoiceController.openInvoiceMenu(player, targetPlayer, true);
-            sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.VIEW_COMMAND.OPEN_MENU").replace("%player_name%", targetPlayer.getName()));
-        } else if (args[0].equalsIgnoreCase("cancel")) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.PLAYER_ONLY"));
-                return true;
-            }
-
-            if (!(sender instanceof ConsoleCommandSender) && !sender.isOp() && !this.invoiceController.getInvoiceManager().isAllowedToCancelInvoice(((Player) sender))) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.NO_PERMISSION"));
-                return true;
-            }
-
-            final Player player = (Player) sender;
-
-            if (args.length < 4) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.CANCEL_COMMAND.USAGE"));
-                return true;
-            }
-
-            final OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[1]);
-            if (targetPlayer == null) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.INVALID_PLAYER"));
-                return true;
-            }
-
-            int invoiceId;
-            try {
-                invoiceId = Integer.parseInt(args[2]);
-            } catch (NumberFormatException e) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.CANCEL_COMMAND.INVALID_INVOICE_ID"));
-                return true;
-            }
-
-            // Combine remaining arguments as the reason
-            StringBuilder reasonBuilder = new StringBuilder();
-            for (int i = 3; i < args.length; i++) {
-                reasonBuilder.append(args[i]).append(" ");
-            }
-            String reason = reasonBuilder.toString().trim();
-            if (reason.length() > 32) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.REASON_TOO_LONG"));
-                return true;
-            }
-
-            this.invoiceController.getInvoiceManager().cancelInvoice(player, targetPlayer.getUniqueId(), invoiceId, reason);
-        } else if (args[0].equalsIgnoreCase("help")) {
-            sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + "\n");
-            sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + Language.getMessage("INVOICE.COMMANDS.COMMAND_LIST_HEADER"));
-            for (String helpCommand : this.getHelpCommands()) {
-                sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + helpCommand);
-            }
-            sender.sendMessage(Language.getMessage("INVOICE.PREFIX") + "\n");
+        if (amount <= 0) {
+            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.FORCECREATE_COMMAND.NEGATIVE_AMOUNT"));
+            return;
         }
 
-        return false;
+        if (reason == null || reason.length() > 32) {
+            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.FORCECREATE_COMMAND.REASON_TOO_LONG"));
+            return;
+        }
+
+        invoiceController.getInvoiceManager().addInvoice(creator.getUniqueId(), payer.getUniqueId(), reason, amount);
+        sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.FORCECREATE_COMMAND.INVOICE_SENT").replace("%player_name%", payer.getName() != null ? payer.getName() : "Unknown"));
+
+        if (payer.isOnline()) {
+            Player payerOnline = payer.getPlayer();
+            if (payerOnline != null) {
+                payerOnline.sendMessage(Language.getMessage("INVOICE.COMMANDS.FORCECREATE_COMMAND.INVOICE_RECEIVED"));
+            }
+        }
+    }
+
+    @Subcommand("create")
+    @CommandPermission("minem.invoices.command.create")
+    @CommandCompletion("@players @nothing @nothing")
+    @Description("Creates an invoice for a player.")
+    public void onCreate(Player sender, OfflinePlayer payer, double amount, String reason) {
+        InvoicePermission permission = getInvoicePermission(sender);
+        if (permission == null || !permission.isCanCreateInvoice()) {
+            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.NO_PERMISSION"));
+            return;
+        }
+
+        if (payer == null) {
+            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.INVALID_PLAYER"));
+            return;
+        }
+
+        if (amount <= 0 || reason == null || reason.length() > 32) {
+            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.INVALID_INPUT"));
+            return;
+        }
+
+        if (invoiceController.getInvoiceManager().exceededLimit(sender, amount)) {
+            double limit = invoiceController.getInvoiceManager().getLimit(sender);
+            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.LIMIT_EXCEEDED").replace("%limit%", String.valueOf(limit)));
+            return;
+        }
+
+        invoiceController.getInvoiceManager().addInvoice(sender.getUniqueId(), payer.getUniqueId(), reason, amount);
+        sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.INVOICE_SENT").replace("%player_name%", payer.getName() != null ? payer.getName() : "Unknown"));
+
+        if (payer.isOnline()) {
+            Player payerOnline = payer.getPlayer();
+            if (payerOnline != null) {
+                payerOnline.sendMessage(Language.getMessage("INVOICE.COMMANDS.CREATE_COMMAND.INVOICE_RECEIVED"));
+            }
+        }
+    }
+
+    @Subcommand("view")
+    @CommandPermission("minem.invoices.command.view")
+    @CommandCompletion("@players")
+    @Description("View invoices of a specified player.")
+    public void onView(Player sender, OfflinePlayer targetPlayer) {
+        if (targetPlayer == null) {
+            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.VIEW_COMMAND.INVALID_PLAYER"));
+            return;
+        }
+
+        if (Config.getBoolean("RANK_PERMISSIONS.ONLY_RANKS_MAY_VIEW_INVOICES") && !invoiceController.getInvoiceManager().isAllowedToCheckInvoice(sender)) {
+            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.VIEW_COMMAND.NO_PERMISSION_TO_SEND"));
+            return;
+        }
+
+        invoiceController.openInvoiceMenu(sender, targetPlayer, true);
+    }
+
+    @Subcommand("cancel")
+    @CommandPermission("minem.invoices.command.cancel")
+    @CommandCompletion("@players @nothing")
+    @Description("Cancels a specified invoice for a player.")
+    public void onCancel(Player sender, OfflinePlayer targetPlayer, int invoiceId, String reason) {
+        if (targetPlayer == null) {
+            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CANCEL_COMMAND.INVALID_PLAYER"));
+            return;
+        }
+
+        if (!invoiceController.getInvoiceManager().isAllowedToCancelInvoice(sender)) {
+            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CANCEL_COMMAND.NO_PERMISSION_TO_SEND"));
+            return;
+        }
+
+        if (reason == null || reason.length() > 32) {
+            sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CANCEL_COMMAND.REASON_TOO_LONG"));
+            return;
+        }
+
+        invoiceController.getInvoiceManager().cancelInvoice(sender, targetPlayer.getUniqueId(), invoiceId, reason);
+        sender.sendMessage(Language.getMessage("INVOICE.COMMANDS.CANCEL_COMMAND.INVOICE_CANCELLED").replace("%player_name%", targetPlayer.getName() != null ? targetPlayer.getName() : "Unknown"));
     }
 
     private List<String> getHelpCommands() {
         return Language.getMessageList("INVOICE.COMMANDS.HELP_COMMAND.COMMAND_LIST");
     }
 
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        List<String> completions = new ArrayList<>();
-
-        if (args.length == 1) {
-            completions.add("create");
-            completions.add("check");
-            completions.add("cancel");
-            completions.add("help");
-        } else if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("create") || args[0].equalsIgnoreCase("check") || args[0].equalsIgnoreCase("cancel")) {
-                // Add player names as completions
-                completions.addAll(getPlayerNames());
-            }
-        }
-
-        return completions;
-    }
-
-    private List<String> getPlayerNames() {
-        List<String> playerNames = new ArrayList<>();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            playerNames.add(player.getName());
-        }
-        return playerNames;
+    private InvoicePermission getInvoicePermission(CommandSender sender) {
+        return invoiceController.getInvoiceManager().getInvoicePermissions().stream()
+                .filter(perm -> perm != null && sender.hasPermission(perm.getPermission()))
+                .findFirst()
+                .orElse(null);
     }
 }

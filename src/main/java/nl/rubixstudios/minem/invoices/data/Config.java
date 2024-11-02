@@ -20,7 +20,7 @@ public class Config {
         LICENSE_KEY = config.getString("LICENSE_KEY");
     }
 
-    public static String getMessage(String path) {
+    public static String getString(String path) {
         final ConfigFile configFile = MineMInvoices.getInstance().getConfigFile();
         return configFile.getString(path);
     }
@@ -30,8 +30,13 @@ public class Config {
         return configFile.getInt(path);
     }
 
-    public static List<String> getMessageList(String path) {
+    public static List<String> getStringList(String path) {
         final ConfigFile configFile = MineMInvoices.getInstance().getConfigFile();
         return configFile.getStringList(path);
+    }
+
+    public static boolean getBoolean(String path) {
+        final ConfigFile configFile = MineMInvoices.getInstance().getConfigFile();
+        return configFile.getBoolean(path);
     }
 }

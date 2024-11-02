@@ -2,17 +2,57 @@
 #                      MineM Invoices                     #
 #=========================================================#
 
-COMMAND_NAME: "invoice" # The name of the command
+OPEN_INVOICE_MENU:
+  COMMAND:
+    ENABLED: true # Enable or disable the command for opening the invoice menu.
+    ALIASES: # List of aliases for the command.
+      - "invoice"
+      - "inv"
+      - "invmenu"
+    PERMISSION:
+      NEED_PERMISSION: false # Specify if players need a permission to access the menu.
+      PERMISSION: "mineminvoices.openmenu" # The permission required to open the menu.
+
+  RIGHT_CLICK_ITEM:
+    ENABLED: true # Enable or disable opening the menu by right-clicking an item.
+    ITEM: # Item that players need to right-click to open the menu.
+      MATERIAL: "PAPER" # Material of the item.
+    PERMISSION:
+      NEED_PERMISSION: false # Specify if players need a permission to right-click the item.
+      PERMISSION: "mineminvoices.openmenu" # Permission required to right-click the item.
+
+  RIGHT_CLICK_BLOCK:
+    ENABLED: true # Enable or disable opening the menu by right-clicking a block.
+    BLOCK: # Block that players need to right-click to open the menu.
+      MATERIAL: "RED_SANDSTONE_STAIRS" # Material of the block.
+    PERMISSION:
+      NEED_PERMISSION: false # Specify if players need a permission to right-click the block.
+      PERMISSION: "mineminvoices.openmenu" # Permission required to right-click the block.
 
 INVOICE_SETTINGS:
-  STANDARD_DAYS_TO_PAY: 7 # The amount of days that the player has to pay the invoice.
+  STANDARD_DAYS_TO_PAY: 7 # Number of days players have to pay their invoices.
 
 RANK_PERMISSIONS:
-  # These are the ranks in-game that have access to sending invoices to players.
-  # Without these ranks, players cannot send invoices.
-  POLICE:
-    PERMISSION: "mineminvoices.police" # This is the permission that the player needs to have to send invoices.
-    LIMIT_AMOUNT: 1000.00 # This is the maximum amount that the player can send in an invoice.
-    CAN_CREATE_INVOICE: true # This is whether or not the player can create invoices.
-    CAN_CANCEL_INVOICE: true # This is whether or not the player can cancel invoices.
-    CAN_CHECK_INVOICE: true # This is whether or not the player can check invoices.
+  ONLY_RANKS_MAY_VIEW_INVOICES: false # Allow only specific ranks to view invoices.
+
+  # Define the ranks that can send invoices to players.
+  RANKS:
+    DEFAULT: # Example rank
+      PERMISSION: "mineminvoices.default" # Permission required to send invoices.
+      LIMIT_AMOUNT: 1000.00 # Maximum amount a player can send in an invoice.
+      CAN_CREATE_INVOICE: true # Can the player create invoices?
+      CAN_CANCEL_INVOICE: true # Can the player cancel invoices?
+      CAN_CHECK_INVOICE: false # Can the player check other players invoices?
+    POLICE: # Example rank
+      PERMISSION: "mineminvoices.police" # Permission required to send invoices.
+      LIMIT_AMOUNT: 1000.00 # Maximum amount a player can send in an invoice.
+      CAN_CREATE_INVOICE: true # Can the player create invoices?
+      CAN_CANCEL_INVOICE: true # Can the player cancel invoices?
+      CAN_CHECK_INVOICE: true # Can the player check invoices?
+
+ECONOMY:
+  # By default, the plugin uses Vault for the economy system.
+  # Configure the following commands only if USE_VAULT is set to false.
+  USE_VAULT: true # Set to true to use Vault for economy.
+  ADD_BALANCE_COMMAND: "eco give %player% %amount%" # Command to add balance to a player.
+  REMOVE_BALANCE_COMMAND: "eco take %player% %amount%" # Command to remove balance from a player.
