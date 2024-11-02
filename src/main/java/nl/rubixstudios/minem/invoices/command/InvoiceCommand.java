@@ -161,7 +161,7 @@ public class InvoiceCommand extends BaseCommand {
 
     private InvoicePermission getInvoicePermission(CommandSender sender) {
         return invoiceController.getInvoiceManager().getInvoicePermissions().stream()
-                .filter(perm -> perm != null && sender.hasPermission(perm.getPermission()))
+                .filter(perm -> perm != null && perm.getPermission() != null && sender.hasPermission(perm.getPermission()))
                 .findFirst()
                 .orElse(null);
     }
