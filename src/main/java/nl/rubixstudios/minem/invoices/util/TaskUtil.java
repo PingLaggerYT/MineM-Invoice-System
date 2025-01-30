@@ -8,7 +8,7 @@ import org.bukkit.scheduler.BukkitTask;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * @author Djorr on 28/07/2024
+ * @author PingLagger on 28/07/2024
  * @project RFactuur
  */
 public class TaskUtil {

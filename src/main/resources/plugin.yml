@@ -1,8 +1,8 @@
 name: MineM-Invoices
 version: '${project.version}'
 main: nl.rubixstudios.minem.invoices.MineMInvoices
-author: Djorr
-website: https://discord.rubixdevelopment.nl
+author: PingLagger
+website: https://discord.aizsargs.xyz
 api-version: 1.13
 depend:
   - Vault
