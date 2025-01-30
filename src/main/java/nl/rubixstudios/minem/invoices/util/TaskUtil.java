@@ -9,7 +9,7 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * @author PingLagger on 28/07/2024
- * @project RFactuur
+ * @project MineMInvoices
  */
 public class TaskUtil {
 

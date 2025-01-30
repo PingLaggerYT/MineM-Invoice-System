@@ -1,7 +1,7 @@
 name: MineM-Invoices
 version: '${project.version}'
 main: nl.rubixstudios.minem.invoices.MineMInvoices
-author: PingLagger
+author: PingLagger, Artiquillos
 website: https://discord.aizsargs.xyz
 api-version: 1.13
 depend:
